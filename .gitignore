@@ -1,3 +1,9 @@
-datos/
+datos/*
+!datos/.gitkeep
+*.hdf5
+*.gwf
 .ipynb_checkpoints/
 __pycache__/
+*.egg-info/
+.venv/
+.vscode/

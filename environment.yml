@@ -8,4 +8,7 @@ dependencies:
   - numpy
   - scipy
   - matplotlib
+  - libblas=*=*openblas  # evita MKL: en Windows chocaba con las DLL de anaconda base y tumbaba el kernel
   - jupyterlab
+  - ipykernel
+  - nbstripout
