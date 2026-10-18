@@ -23,3 +23,29 @@ Por qué se cayó el kernel.
 
 **Siguiente:**
 Arreglar el kernel y graficar los 32 segundos de H1 y L1.
+
+## 2026-10-16
+**Hecho:**
+Encontré por qué se caía el kernel: numpy con MKL cargaba un `libiomp5md.dll` viejo de anaconda base, y hasta multiplicar dos matrices pequeñas tumbaba Python. Cambié el entorno a OpenBLAS (`libblas=*=*openblas`), instalé scipy desde conda-forge, añadí `nbstripout` y registré el kernel "Python (cazador)". En el notebook quité el parche del `PATH`, definí `EVENTO` y `MEDIA_VENTANA` y escribí la función `cargar()`, que descarga de GWOSC solo la primera vez y después lee la copia de `datos/`. También ordené el repo: `.gitkeep` en `datos/` y `src/`, `.gitignore` ampliado, `.gitattributes` para `nbstripout` y el README con las fases y el estado.
+
+**Salió:**
+Ya no se cae el kernel y los 32 s de H1 y L1 se descargan una sola vez: en `datos/` quedaron `H1_GW150914_32s.hdf5` y `L1_GW150914_32s.hdf5` (cerca de 1 MB cada uno).
+
+**No entendí:**
+La caída del kernel (`0xc06d007f`), porque no estaba en mi código: Python moría hasta con `plot([1, 2, 3])`, y el parche del `PATH` solo funcionaba si esa celda corría primero. Al final resultó que numpy con MKL cargaba un `libiomp5md.dll` viejo de anaconda base, que está en el PATH de usuario. Lo que sigo sin entender bien es por qué Windows elige esa DLL de base y no la del entorno `cazador`.
+
+**Siguiente:**
+Calcular el espectro de ruido con `datos_h1.asd(fftlength=4)`, después blanquear y filtrar la señal para ver el chirp.
+
+## 2026-10-17
+**Hecho:**
+Revisé el proyecto entero: seguridad, GitHub, entorno y funcionamiento. Descubrí que el commit `e982184` había devuelto el notebook a la versión del 12/10 (otra vez con el parche del `PATH` y `cache=True`, sin `cargar()`), así que lo restauré desde `072f0ce`. Quité del entorno `mkl` y tres paquetes que solo él usaba (`tbb`, `libhwloc` y `libwinpthread`): 565 MB que habían quedado de la primera instalación aunque numpy ya usaba OpenBLAS. En el notebook añadí `gps_evento()`, que pide el tiempo del evento a GWOSC solo la primera vez y lo guarda en `datos/`, y moví `DATOS` junto a las demás constantes.
+
+**Salió:**
+El notebook corre entero sin errores, también sin internet (lo probé cortando la red con un proxy falso). En `datos/` apareció `GW150914_gps.txt` con 1126259462.4, el mismo valor que da GWOSC. numpy, scipy y gwpy siguen funcionando sin MKL. El historial del repo está limpio: no hay contraseñas, tokens ni rutas de mi PC, y nbstripout sí quita las salidas.
+
+**No entendí:**
+Cómo acabó la versión vieja del notebook guardada encima de la buena. Lo más probable es que VS Code la tuviera abierta y la guardara antes del commit, pero no lo sé seguro.
+
+**Siguiente:**
+Revisar el diff y hacer commit de lo de hoy. Después, calcular el espectro de ruido con `datos_h1.asd(fftlength=4)` y blanquear y filtrar la señal para ver el chirp.
