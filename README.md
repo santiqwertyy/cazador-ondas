@@ -1,44 +1,63 @@
 # Cazador de ondas
 
-Buscador de ondas gravitacionales.
+Buscador de ondas gravitacionales escrito desde cero en Python sobre los datos públicos de LIGO/Virgo (GWOSC).
 
 ## Objetivo
 
-Este proyecto, escrito en Python, se enfoca en hacer un buscador de ondas gravitacionales desde cero, usando datos públicos de LIGO/Virgo, para intentar encontrar una señal nueva, preferiblemente de agujeros negros.
+Recorrer tramos largos de datos y encontrar una señal que no esté en los catálogos, preferiblemente de agujeros negros.
+
+No hay garantía de que esa señal exista en los datos públicos. Lo que sí se puede asegurar es el método: cada paso se valida primero contra eventos ya confirmados.
+
+## Términos
+
+- **Chirp**: forma de la señal de una fusión; la frecuencia y la amplitud suben juntas hasta el choque.
+- **Blanqueado**: normalizar los datos por el espectro de ruido para que ninguna frecuencia domine sobre las demás.
+- ***Matched filtering***: correlacionar los datos con plantillas teóricas de la señal.
+- **SNR**: relación señal-ruido; cuánto sobresale una coincidencia sobre lo que produciría el ruido solo.
+- **Tasa de falsas alarmas**: con qué frecuencia el ruido, sin ninguna señal, genera un candidato igual de fuerte.
 
 ## Fases
 
-0. Estructura del proyecto y entorno.
-1. Explorar GW150914: descargar, graficar, espectro de ruido, blanqueado y filtrado hasta ver el "chirp".
-2. Recuperar GW150914 con *matched filtering* y obtener un SNR parecido al publicado.
-3. Repetirlo con otros eventos conocidos (GW151226, GW170104...).
-4. Estimar el fondo de ruido y la tasa de falsas alarmas.
-5. Recorrer tramos largos de datos buscando candidatos.
+Cada fase termina con una prueba que hay que superar antes de pasar a la siguiente.
+
+0. **Tu primera onda.** GW150914 con gwpy: datos en bruto, espectro de ruido, blanqueado, filtrado, Q-transform y `.wav`. Prueba: la señal se ve y se oye en H1 y L1.
+1. **Matemáticas de la señal.** FFT, estimación del espectro (Welch), blanqueado y filtros escritos a mano. Prueba: el blanqueado propio de GW150914 coincide con el de gwpy.
+2. **Física.** Generador de chirp a orden newtoniano y estimación de la masa chirp desde el espectrograma. Prueba: masa chirp de GW150914 cercana a la del catálogo.
+3. ***Matched filtering*.** Filtro propio, banco de plantillas e inyecciones. Prueba: GW150914 en H1 y L1 con el retraso correcto entre detectores, y 5 eventos más de O1/O2.
+4. **Buscador completo.** Banco de plantillas amplio, test χ², calidad de datos, coincidencia entre detectores, fondo por time slides y tasa de falsas alarmas. Prueba: un mes de O3 procesado, recuperando los eventos del catálogo.
+5. **Especialización y caza.** Una búsqueda de nicho sobre O4b y O4c. Prueba: candidatos significativos que no estén en ningún catálogo.
+6. **Validación y publicación.**
+
+El orden no es arbitrario: cada fase valida la herramienta que usa la siguiente.
 
 ## Estado actual
 
-Fase 1: ya descargo y grafico los 32 s de H1 y L1 alrededor de GW150914.
+Fase 0. Con los 32 s de H1 y L1 alrededor de GW150914, el notebook `01-gw150914` grafica los datos en bruto, calcula el espectro de ruido, blanquea los datos y los filtra entre 35 y 350 Hz. El chirp se ve en los dos detectores y en el Q-transform. También exporta 3 s de la señal blanqueada de cada detector a `datos/H1_GW150914.wav` y `datos/L1_GW150914.wav`.
 
-## Cómo montar el entorno
+Falta escuchar los `.wav` para dar la fase por superada.
 
-Necesitas conda (Anaconda o Miniconda).
+## Entorno
+
+Requiere conda (Anaconda o Miniconda).
 
 ```
-git clone https://github.com/santiqwertyy/cazador-ondas.git   # descarga el repositorio
-cd cazador-ondas                        # entra en el repositorio
-conda env create -f environment.yml     # crea el entorno con los paquetes necesarios
-conda activate cazador                  # activa el entorno
-python -m ipykernel install --user --name cazador --display-name "Python (cazador)"   # registra el kernel para Jupyter
-nbstripout --install --attributes .gitattributes   # no subir las salidas de los notebooks a git
+git clone https://github.com/santiqwertyy/cazador-ondas.git
+cd cazador-ondas
+conda env create -f environment.yml     # crea el entorno
+conda activate cazador
+python -m ipykernel install --user --name cazador --display-name "Python (cazador)"   # registra el kernel
+nbstripout --install --attributes .gitattributes   # evita subir las salidas de los notebooks
 ```
 
-En los notebooks, elige el kernel "Python (cazador)".
+En los notebooks, el kernel es "Python (cazador)".
+
+El entorno usa OpenBLAS en lugar de MKL. Con MKL, el kernel se caía en Windows por un conflicto de DLL con anaconda base.
 
 ## Estructura
 
-- `datos/`: datos descargados de GWOSC (no incluidos en el repo; los notebooks los guardan aquí la primera vez).
+- `datos/`: datos descargados de GWOSC. No están en el repositorio; los notebooks los guardan aquí la primera vez.
 - `notebooks/`: exploración y análisis.
-- `src/`: código fuente del buscador.
-- `diario.md`: resumen de cada día que avanzo en el proyecto.
-- `environment.yml`: receta del entorno de conda.
+- `src/`: código del buscador.
+- `diario.md`: registro de cada día de trabajo.
+- `environment.yml`: definición del entorno de conda.
 - `LICENSE`: licencia MIT.

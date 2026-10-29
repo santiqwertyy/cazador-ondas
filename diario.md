@@ -49,3 +49,16 @@ Cómo acabó la versión vieja del notebook guardada encima de la buena. Lo más
 
 **Siguiente:**
 Revisar el diff y hacer commit de lo de hoy. Después, calcular el espectro de ruido con `datos_h1.asd(fftlength=4)` y blanquear y filtrar la señal para ver el chirp.
+
+## 2026-10-29
+**Hecho:**
+Terminé la fase 1. Agregué las constantes `DURACION_FFT`, `BANDA`, `RECORTE` y `RETRASO_MAXIMO`. Calculé el espectro de ruido (ASD) de H1 y L1 con segmentos de 4 s y lo grafiqué en log-log. Escribí `blanquear()`, que blanquea y filtra entre 35 y 350 Hz, y recorté de t0 - 0.2 s a t0 + 0.1 s. Con `retraso_entre()` medí por correlación cruzada cuánto tarda la señal de un detector al otro, y superpuse L1 desplazado e invertido sobre H1. Al final hice el Q-transform de los dos detectores con `graficar_q()`.
+
+**Salió:**
+El ruido es mínimo y casi plano (~1e-23 /√Hz) entre 100 y 1000 Hz. Abajo de ~30 Hz sube mucho (ruido sísmico), hay picos en 60 Hz y sus armónicos y otros en ~35, ~500 y ~1000 Hz. Cerca de 2000 Hz cae de golpe. Después de blanquear y filtrar, el ruido queda con amplitud ~0.4 y el chirp llega a ~3 justo en t0. L1 llega 7.3 ms antes que H1 con correlación -0.55: la señal es la misma pero invertida, y al desplazar e invertir L1 las dos curvas coinciden. En el Q-transform se ve la curva del chirp, que sube de ~35 Hz a ~250-300 Hz en unos 0.1 s y termina en t0 + 0.42 s (L1) y t0 + 0.43 s (H1).
+
+**No entendí:**
+Entendí todo 
+
+**Siguiente:**
+Fase 2: *matched filtering* de GW150914. PyCBC no va bien en Windows nativo, así que primero ver si funciona en WSL2 o si escribo el filtro a mano con numpy.
