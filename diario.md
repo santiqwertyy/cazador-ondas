@@ -62,3 +62,15 @@ Entendí todo
 
 **Siguiente:**
 Fase 2: *matched filtering* de GW150914. PyCBC no va bien en Windows nativo, así que primero ver si funciona en WSL2 o si escribo el filtro a mano con numpy.
+
+## 2026-10-30
+**Hecho:**
+Escuché los `.wav` de H1 y L1, se oye el chirp y con eso di por superada la fase 0. Empecé la fase 1 con el notebook `02-fft`: escribí `dft()`, que calcula la transformada por la definición, y `fft()`, el algoritmo de Cooley–Tukey, que parte la señal en muestras pares e impares hasta llegar a una sola. Las comparé con `numpy.fft` y medí cuánto tarda cada una. Después escondí un seno de 123 Hz y amplitud 0.1 en ruido de amplitud 1 y lo busqué en el espectro. Más tarde pasé la FFT a `src/senal.py` y escribí ahí `welch()`, `blanquear()` y `pasa_banda()`. En `03-welch` comparé la PSD con `scipy.signal.welch` y con gwpy, y en `04-blanqueado` blanqueé y filtré GW150914 y lo comparé con gwpy.
+
+**Salió:**
+`dft()` difiere de `numpy.fft` en ~1e-11 y `fft()` en ~5e-14, o sea, son iguales salvo por el redondeo. Con 2048 muestras, `dft()` tarda ~0.5 s y `fft()` ~0.05 s; cada vez que se duplican las muestras, la primera tarda 4 veces más y la segunda apenas el doble. `numpy.fft` es unas mil veces más rápida que las dos. En el tiempo, el seno no se ve dentro del ruido, pero en el espectro hay un pico justo en 123 Hz, 94 veces más alto que la mediana. Mi Welch coincide con scipy y gwpy en una parte en 10^10. Mi blanqueado coincide con el de gwpy en ~3e-11 en H1 y L1, así que la fase 1 está superada. Para lograrlo hizo falta copiar dos detalles de gwpy: el filtro blanqueador dura solo 2 s (truncado del espectro inverso) y `whiten()` estima la ASD sin solapamiento. Filtrado entre 35 y 350 Hz, mi resultado se parece al de gwpy con correlación 0.98; la diferencia es que gwpy usa un filtro elíptico que dentro de la banda oscila entre 0.63 y 1. Lo blanqueado no tiene desviación 1 sino 1.21 (H1) y 1.47 (L1): las líneas estrechas, como la de 1012 Hz en L1, se cuelan porque un filtro de 2 s no las puede recortar.
+
+**No entendí:**
+
+**Siguiente:**
+Fase 2: generar un chirp newtoniano y estimar la masa chirp de GW150914 a partir del espectrograma.

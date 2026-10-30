@@ -32,9 +32,11 @@ El orden no es arbitrario: cada fase valida la herramienta que usa la siguiente.
 
 ## Estado actual
 
-Fase 0. Con los 32 s de H1 y L1 alrededor de GW150914, el notebook `01-gw150914` grafica los datos en bruto, calcula el espectro de ruido, blanquea los datos y los filtra entre 35 y 350 Hz. El chirp se ve en los dos detectores y en el Q-transform. También exporta 3 s de la señal blanqueada de cada detector a `datos/H1_GW150914.wav` y `datos/L1_GW150914.wav`.
+Fase 0 superada. Con los 32 s de H1 y L1 alrededor de GW150914, el notebook `01-gw150914` grafica los datos en bruto, calcula el espectro de ruido, blanquea los datos y los filtra entre 35 y 350 Hz. El chirp se ve en los dos detectores y en el Q-transform, y se oye en `datos/H1_GW150914.wav` y `datos/L1_GW150914.wav`.
 
-Falta escuchar los `.wav` para dar la fase por superada.
+Fase 1 superada. El notebook `02-fft` tiene la transformada de Fourier discreta escrita a mano, primero por la definición y después con el algoritmo de Cooley–Tukey, comparadas con `numpy.fft`. Con ella se recupera un seno de 123 Hz diez veces más débil que el ruido. `src/senal.py` reúne esa FFT, la estimación de la PSD por el método de Welch, el blanqueado y un filtro pasa banda, todo escrito a mano. En `03-welch`, la PSD coincide con la de `scipy.signal.welch` y gwpy en una parte en 10^10. En `04-blanqueado`, el blanqueado de GW150914 coincide con el de gwpy en las 131072 muestras de H1 y L1 (diferencia máxima 3e-11). Después de filtrar entre 35 y 350 Hz, la correlación con gwpy es 0.98: gwpy usa otro tipo de filtro.
+
+Siguiente: fase 2, generar un chirp newtoniano y estimar la masa chirp de GW150914 a partir del espectrograma.
 
 ## Entorno
 
@@ -57,7 +59,7 @@ El entorno usa OpenBLAS en lugar de MKL. Con MKL, el kernel se caía en Windows 
 
 - `datos/`: datos descargados de GWOSC. No están en el repositorio; los notebooks los guardan aquí la primera vez.
 - `notebooks/`: exploración y análisis.
-- `src/`: código del buscador.
+- `src/`: código del buscador. `senal.py`: FFT, Welch, blanqueado y pasa banda.
 - `diario.md`: registro de cada día de trabajo.
 - `environment.yml`: definición del entorno de conda.
 - `LICENSE`: licencia MIT.
