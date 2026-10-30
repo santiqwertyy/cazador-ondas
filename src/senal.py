@@ -7,8 +7,9 @@ def fft(x):
         return np.array(x, dtype=complex)
     if n % 2 != 0:
         raise ValueError("la longitud tiene que ser una potencia de 2")
-    pares = fft(x[..., 0::2])
-    impares = fft(x[..., 1::2]) * np.exp(-2j * np.pi * np.arange(n // 2) / n)
+    mitades = fft(np.stack([x[..., 0::2], x[..., 1::2]]))
+    pares = mitades[0]
+    impares = mitades[1] * np.exp(-2j * np.pi * np.arange(n // 2) / n)
     return np.concatenate([pares + impares, pares - impares], axis=-1)
 
 
@@ -86,11 +87,14 @@ def filtro_blanqueador(asd, n_coeficientes):
     return np.roll(respuesta, mitad - 1)[:n_coeficientes]
 
 
-def blanquear(x, fs, duracion_fft, duracion_filtro=2):
+def asd_interpolada(x, fs, duracion_fft):
     frecuencias, psd = welch(x, fs, duracion_fft * fs, "mediana", solapamiento=0)
     frecuencias_x = np.arange(len(x) // 2 + 1) * fs / len(x)
-    asd = np.interp(frecuencias_x, frecuencias, np.sqrt(psd))
-    filtro = filtro_blanqueador(asd, duracion_filtro * fs)
+    return np.interp(frecuencias_x, frecuencias, np.sqrt(psd))
+
+
+def blanquear(x, fs, duracion_fft, duracion_filtro=2):
+    filtro = filtro_blanqueador(asd_interpolada(x, fs, duracion_fft), duracion_filtro * fs)
     mitad = len(filtro) // 2
     ventana = hann(len(filtro))
     y = x - x.mean()

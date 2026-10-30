@@ -36,7 +36,11 @@ Fase 0 superada. Con los 32 s de H1 y L1 alrededor de GW150914, el notebook `01-
 
 Fase 1 superada. El notebook `02-fft` tiene la transformada de Fourier discreta escrita a mano, primero por la definición y después con el algoritmo de Cooley–Tukey, comparadas con `numpy.fft`. Con ella se recupera un seno de 123 Hz diez veces más débil que el ruido. `src/senal.py` reúne esa FFT, la estimación de la PSD por el método de Welch, el blanqueado y un filtro pasa banda, todo escrito a mano. En `03-welch`, la PSD coincide con la de `scipy.signal.welch` y gwpy en una parte en 10^10. En `04-blanqueado`, el blanqueado de GW150914 coincide con el de gwpy en las 131072 muestras de H1 y L1 (diferencia máxima 3e-11). Después de filtrar entre 35 y 350 Hz, la correlación con gwpy es 0.98: gwpy usa otro tipo de filtro.
 
-Siguiente: fase 2, generar un chirp newtoniano y estimar la masa chirp de GW150914 a partir del espectrograma.
+Fase 2 superada. El notebook `05-chirp` genera el chirp newtoniano y estima la masa chirp desde el espectrograma: para GW150914 da 29.25 M☉ en H1 y 28.75 M☉ en L1, pero ese método era impreciso (±5.6 % en inyecciones), y según qué parte de la señal se usara la masa iba de 25 a 38 M☉, porque la fórmula newtoniana no describe el final de la fusión.
+
+El notebook `06-masa-chirp` lo resuelve con *matched filtering* escrito a mano (`src/filtro_adaptado.py`) y plantillas IMRPhenomD generadas con ripple. La masa chirp de GW150914 con H1 y L1 combinados es **30.8 M☉ (90 %: 29.4–32.2)**; el catálogo da 30.2. El giro efectivo sale −0.05 (LIGO: −0.06), y la señal llega a L1 7.1 ms antes que a H1. Con inyecciones en el ruido real, el sesgo es −0.2 %, la dispersión 1.2 %, y las 30 quedan a menos del 5 %.
+
+Siguiente: fase 3. El *matched filtering* ya está hecho; falta validarlo contra PyCBC, el banco de plantillas para búsqueda y 5 eventos más de O1/O2.
 
 ## Entorno
 
@@ -59,7 +63,7 @@ El entorno usa OpenBLAS en lugar de MKL. Con MKL, el kernel se caía en Windows 
 
 - `datos/`: datos descargados de GWOSC. No están en el repositorio; los notebooks los guardan aquí la primera vez.
 - `notebooks/`: exploración y análisis.
-- `src/`: código del buscador. `senal.py`: FFT, Welch, blanqueado y pasa banda.
+- `src/`: código del buscador. `senal.py`: FFT, Welch, blanqueado, pasa banda y espectrograma. `filtro_adaptado.py`: *matched filtering*.
 - `diario.md`: registro de cada día de trabajo.
 - `environment.yml`: definición del entorno de conda.
 - `LICENSE`: licencia MIT.
