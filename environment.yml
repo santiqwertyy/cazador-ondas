@@ -3,15 +3,15 @@ channels:
   - conda-forge
 dependencies:
   - python=3.12
-  - gwpy
-  - gwosc
-  - numpy
-  - scipy
-  - matplotlib
+  - gwpy=4.0.1
+  - gwosc=0.8.3
+  - numpy=2.5.3
+  - scipy=1.18.1
+  - matplotlib=3.11.2
   - libblas=*=*openblas  # evita MKL: en Windows chocaba con las DLL de anaconda base y tumbaba el kernel
-  - jupyterlab
-  - ipykernel
-  - nbstripout
+  - jupyterlab=4.6.4
+  - ipykernel=7.3.0
+  - nbstripout=0.9.1
   - pip
   - pip:
       - jax==0.12.0.1

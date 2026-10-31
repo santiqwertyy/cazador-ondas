@@ -38,9 +38,27 @@ Fase 1 superada. El notebook `02-fft` tiene la transformada de Fourier discreta 
 
 Fase 2 superada. El notebook `05-chirp` genera el chirp newtoniano y estima la masa chirp desde el espectrograma: para GW150914 da 29.25 M☉ en H1 y 28.75 M☉ en L1, pero ese método era impreciso (±5.6 % en inyecciones), y según qué parte de la señal se usara la masa iba de 25 a 38 M☉, porque la fórmula newtoniana no describe el final de la fusión.
 
-El notebook `06-masa-chirp` lo resuelve con *matched filtering* escrito a mano (`src/filtro_adaptado.py`) y plantillas IMRPhenomD generadas con ripple. La masa chirp de GW150914 con H1 y L1 combinados es **30.8 M☉ (90 %: 29.4–32.2)**; el catálogo da 30.2. El giro efectivo sale −0.05 (LIGO: −0.06), y la señal llega a L1 7.1 ms antes que a H1. Con inyecciones en el ruido real, el sesgo es −0.2 %, la dispersión 1.2 %, y las 30 quedan a menos del 5 %.
+El notebook `06-masa-chirp` lo resuelve con *matched filtering* escrito a mano (`src/filtro_adaptado.py`) y plantillas IMRPhenomD generadas con ripple. La masa chirp de GW150914 con H1 y L1 combinados es **30.8 M☉ (90 %: 29.4–32.2)**, medida en el detector; LIGO da 30.2 (artículo de 2016) y ≈30.7 (catálogo GWTC-2.1). El giro efectivo sale −0.05 (GWTC-2.1: −0.04), y la señal llega a L1 7.1 ms antes que a H1. Con inyecciones en el ruido real, el sesgo es −0.2 %, la dispersión 1.2 %, y las 30 quedan a menos del 5 %.
 
-Siguiente: fase 3. El *matched filtering* ya está hecho; falta validarlo contra PyCBC, el banco de plantillas para búsqueda y 5 eventos más de O1/O2.
+Fase 3, los dos bosses superados. El notebook `07-banco` arma a mano un banco de 866 plantillas IMRPhenomD (masa chirp de 6 a 45 M☉, 5 combinaciones de razón de masas y giro), colocadas para que dos vecinas se parezcan un 90 %. Con 200 señales de otro modelo (IMRPhenomXAS) al azar, el 93 % encuentra una plantilla con un parecido de 0.95 o más (mediana 0.982).
+
+El notebook `08-eventos-o1-o2` recorre con ese banco 18.5 s de datos de H1 y L1 alrededor de 7 eventos y exige coincidencia entre detectores (misma plantilla, ≤10 ms). En los 7, el disparo más fuerte cae a menos de 0.05 s del tiempo del catálogo:
+
+| Evento | SNR de red (catálogo) | L1 − H1 | Masa chirp de la mejor plantilla (catálogo, en el detector) |
+|---|---|---|---|
+| GW150914 | 24.6 (26.0) | −7.3 ms | 33.0 (≈30.7) |
+| GW151012 | 9.8 (9.3) | +1.0 ms | 17.4 (≈18.7) |
+| GW151226 | 12.8 (12.7) | −1.0 ms | 9.7 (≈9.8) |
+| GW170104 | 13.6 (13.8) | +2.9 ms | 24.3 (≈25.7) |
+| GW170608 | 15.3 (15.3) | +7.3 ms | 8.5 (≈8.5) |
+| GW170814 | 16.6 (17.7) | −8.3 ms | 25.9 (≈27.2) |
+| GW170823 | 12.0 (12.2) | +1.0 ms | 37.9 (≈38.9) |
+
+10 señales IMRPhenomXAS inyectadas en el ruido real se recuperan todas, con SNR recuperado / inyectado de 0.95 (mediana; con 10 inyecciones la mediana varía unos ±0.04 de una tanda a otra, y una tanda anterior, con las mismas señales en otros instantes, dio 1.00). Esto todavía no mide la significancia de nada: eso es la fase 4 (FAR e IFAR).
+
+Modo difícil de la fase 3: la forma de onda TaylorF2 (la espiral post-newtoniana hasta 3.5PN) escrita a mano en `src/plantillas.py`. En el notebook `10-taylorf2` coincide con la de ripple, que sigue a LALSuite, en amplitud (2e-15) y fase (3e-11 rad). También muestra que la serie post-newtoniana converge oscilando y que, frente a IMRPhenomD, TaylorF2 solo alcanza para masas chirp menores a ~6 M☉: para agujeros negros más pesados hace falta la fusión.
+
+Siguiente: validar el *matched filtering* y las plantillas contra PyCBC y LALSuite en Google Colab (`notebooks/09-validacion-pycbc.ipynb`) para cerrar la fase 3, y después la fase 4.
 
 ## Entorno
 
@@ -62,8 +80,8 @@ El entorno usa OpenBLAS en lugar de MKL. Con MKL, el kernel se caía en Windows 
 ## Estructura
 
 - `datos/`: datos descargados de GWOSC. No están en el repositorio; los notebooks los guardan aquí la primera vez.
-- `notebooks/`: exploración y análisis.
-- `src/`: código del buscador. `senal.py`: FFT, Welch, blanqueado, pasa banda y espectrograma. `filtro_adaptado.py`: *matched filtering*.
+- `notebooks/`: exploración y análisis. Se ejecutan en orden: el 01 descarga los datos de GW150914 que usan del 03 al 06, y el 07 crea el banco de plantillas que usa el 08. El 09 es solo para Google Colab. El 10 es independiente.
+- `src/`: código del buscador. `senal.py`: FFT, Welch, blanqueado, pasa banda y espectrograma. `filtro_adaptado.py`: *matched filtering*, parecido entre plantillas y coincidencia H1+L1. `plantillas.py`: formas de onda con ripple y TaylorF2 escrita a mano. `datos.py`: descarga y caché de los datos, el tiempo GPS y los parámetros del catálogo.
 - `diario.md`: registro de cada día de trabajo.
 - `environment.yml`: definición del entorno de conda.
 - `LICENSE`: licencia MIT.
