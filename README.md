@@ -40,7 +40,7 @@ Fase 2 superada. El notebook `05-chirp` genera el chirp newtoniano y estima la m
 
 El notebook `06-masa-chirp` lo resuelve con *matched filtering* escrito a mano (`src/filtro_adaptado.py`) y plantillas IMRPhenomD generadas con ripple. La masa chirp de GW150914 con H1 y L1 combinados es **30.8 M☉ (90 %: 29.4–32.2)**, medida en el detector; LIGO da 30.2 (artículo de 2016) y ≈30.7 (catálogo GWTC-2.1). El giro efectivo sale −0.05 (GWTC-2.1: −0.04), y la señal llega a L1 7.1 ms antes que a H1. Con inyecciones en el ruido real, el sesgo es −0.2 %, la dispersión 1.2 %, y las 30 quedan a menos del 5 %.
 
-Fase 3, los dos bosses superados. El notebook `07-banco` arma a mano un banco de 866 plantillas IMRPhenomD (masa chirp de 6 a 45 M☉, 5 combinaciones de razón de masas y giro), colocadas para que dos vecinas se parezcan un 90 %. Con 200 señales de otro modelo (IMRPhenomXAS) al azar, el 93 % encuentra una plantilla con un parecido de 0.95 o más (mediana 0.982).
+Fase 3 superada. El notebook `07-banco` arma a mano un banco de 866 plantillas IMRPhenomD (masa chirp de 6 a 45 M☉, 5 combinaciones de razón de masas y giro), colocadas para que dos vecinas se parezcan un 90 %. Con 200 señales de otro modelo (IMRPhenomXAS) al azar, el 93 % encuentra una plantilla con un parecido de 0.95 o más (mediana 0.982).
 
 El notebook `08-eventos-o1-o2` recorre con ese banco 18.5 s de datos de H1 y L1 alrededor de 7 eventos y exige coincidencia entre detectores (misma plantilla, ≤10 ms). En los 7, el disparo más fuerte cae a menos de 0.05 s del tiempo del catálogo:
 
@@ -58,7 +58,9 @@ El notebook `08-eventos-o1-o2` recorre con ese banco 18.5 s de datos de H1 y L1 
 
 Modo difícil de la fase 3: la forma de onda TaylorF2 (la espiral post-newtoniana hasta 3.5PN) escrita a mano en `src/plantillas.py`. En el notebook `10-taylorf2` coincide con la de ripple, que sigue a LALSuite, en amplitud (2e-15) y fase (3e-11 rad). También muestra que la serie post-newtoniana converge oscilando y que, frente a IMRPhenomD, TaylorF2 solo alcanza para masas chirp menores a ~6 M☉: para agujeros negros más pesados hace falta la fusión.
 
-Siguiente: validar el *matched filtering* y las plantillas contra PyCBC y LALSuite en Google Colab (`notebooks/09-validacion-pycbc.ipynb`) para cerrar la fase 3, y después la fase 4.
+En Google Colab (notebook `09-validacion-pycbc`), mi serie de SNR de GW150914 coincide con la de `pycbc.filter.matched_filter` hasta 7e-16 (el redondeo de la máquina) en H1 y L1, con el mismo pico (20.6303 y 14.1760) en el mismo instante y el mismo σ; las plantillas de ripple dan parecido 1.00000 con las de LALSuite (IMRPhenomD e IMRPhenomXAS, 5 puntos del banco), y mi TaylorF2 coincide con la de PyCBC en amplitud (3e-15) y fase (3e-11 rad).
+
+Fase 4 en curso: test χ² de Allen, compuerta para *glitches* fuertes, segmentos de calidad de GWOSC, coincidencia y *time slides* para medir el fondo (`src/busqueda.py`, notebooks `11-chi2` y `12-fondo-gw150914`). El boss será mayo de 2019 (O3a).
 
 ## Entorno
 
