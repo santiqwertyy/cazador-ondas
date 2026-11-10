@@ -1,10 +1,10 @@
 import numpy as np
 
-from senal import hann, ifft, rfft, welch
+from senal import fft, hann, ifft, rfft, welch
 
 
-def psd_en(frecuencias_destino, x, fs, duracion_fft):
-    frecuencias, psd = welch(x, fs, duracion_fft * fs, "mediana", solapamiento=0)
+def psd_en(frecuencias_destino, x, fs, duracion_fft, directa=fft):
+    frecuencias, psd = welch(x, fs, duracion_fft * fs, "mediana", solapamiento=0, directa=directa)
     return np.interp(frecuencias_destino, frecuencias, psd)
 
 
@@ -16,8 +16,8 @@ def ventana_tukey(n, borde):
     return ventana
 
 
-def transformada(x, fs, borde):
-    return rfft(x * ventana_tukey(len(x), borde)) / fs
+def transformada(x, fs, borde, directa=fft):
+    return rfft(x * ventana_tukey(len(x), borde), directa) / fs
 
 
 def serie_snr(datos_f, plantillas, psd, df, n, indices, inversa=ifft):

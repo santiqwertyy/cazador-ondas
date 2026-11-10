@@ -13,17 +13,17 @@ def fft(x):
     return np.concatenate([pares + impares, pares - impares], axis=-1)
 
 
-def ifft(espectro):
-    return np.conj(fft(np.conj(espectro))) / espectro.shape[-1]
+def ifft(espectro, directa=fft):
+    return np.conj(directa(np.conj(espectro))) / espectro.shape[-1]
 
 
-def rfft(x):
-    return fft(x)[..., : x.shape[-1] // 2 + 1]
+def rfft(x, directa=fft):
+    return directa(x)[..., : x.shape[-1] // 2 + 1]
 
 
-def irfft(espectro):
+def irfft(espectro, directa=fft):
     completo = np.concatenate([espectro, np.conj(espectro[..., -2:0:-1])], axis=-1)
-    return ifft(completo).real
+    return ifft(completo, directa).real
 
 
 def potencia_de_2(n):
@@ -44,7 +44,7 @@ def sesgo_mediana(k):
     return 1 + impares.sum() - pares.sum()
 
 
-def welch(x, fs, n_segmento, promedio="media", solapamiento=0.5):
+def welch(x, fs, n_segmento, promedio="media", solapamiento=0.5, directa=fft):
     paso = int(n_segmento * (1 - solapamiento))
     ventana = hann(n_segmento)
     normalizacion = fs * np.sum(ventana**2)
@@ -52,7 +52,7 @@ def welch(x, fs, n_segmento, promedio="media", solapamiento=0.5):
     for inicio in range(0, len(x) - n_segmento + 1, paso):
         segmento = x[inicio : inicio + n_segmento]
         segmento = (segmento - segmento.mean()) * ventana
-        periodogramas.append(np.abs(rfft(segmento)) ** 2 / normalizacion)
+        periodogramas.append(np.abs(rfft(segmento, directa)) ** 2 / normalizacion)
     periodogramas = np.array(periodogramas)
     periodogramas[:, 1:-1] *= 2
     if promedio == "mediana":
@@ -63,22 +63,22 @@ def welch(x, fs, n_segmento, promedio="media", solapamiento=0.5):
     return frecuencias, psd
 
 
-def convolucionar(x, filtro):
+def convolucionar(x, filtro, directa=fft):
     n_total = len(x) + len(filtro) - 1
     n_fft = potencia_de_2(n_total)
     x_relleno = np.concatenate([x, np.zeros(n_fft - len(x))])
     filtro_relleno = np.concatenate([filtro, np.zeros(n_fft - len(filtro))])
-    completa = ifft(fft(x_relleno) * fft(filtro_relleno)).real[:n_total]
+    completa = ifft(directa(x_relleno) * directa(filtro_relleno), directa).real[:n_total]
     inicio = (len(filtro) - 1) // 2
     return completa[inicio : inicio + len(x)]
 
 
-def filtro_blanqueador(asd, n_coeficientes):
+def filtro_blanqueador(asd, n_coeficientes, directa=fft):
     transferencia = 1 / asd
     borde = hann_simetrica(10)
     transferencia[:5] *= borde[:5]
     transferencia[-5:] *= borde[-5:]
-    respuesta = irfft(transferencia)
+    respuesta = irfft(transferencia, directa)
     mitad = n_coeficientes // 2
     ventana = hann(n_coeficientes)
     respuesta[:mitad] *= ventana[mitad:]
@@ -87,20 +87,20 @@ def filtro_blanqueador(asd, n_coeficientes):
     return np.roll(respuesta, mitad - 1)[:n_coeficientes]
 
 
-def asd_interpolada(x, fs, duracion_fft):
-    frecuencias, psd = welch(x, fs, duracion_fft * fs, "mediana", solapamiento=0)
+def asd_interpolada(x, fs, duracion_fft, directa=fft):
+    frecuencias, psd = welch(x, fs, duracion_fft * fs, "mediana", solapamiento=0, directa=directa)
     frecuencias_x = np.arange(len(x) // 2 + 1) * fs / len(x)
     return np.interp(frecuencias_x, frecuencias, np.sqrt(psd))
 
 
-def blanquear(x, fs, duracion_fft, duracion_filtro=2):
-    filtro = filtro_blanqueador(asd_interpolada(x, fs, duracion_fft), duracion_filtro * fs)
+def blanquear(x, fs, duracion_fft, duracion_filtro=2, directa=fft):
+    filtro = filtro_blanqueador(asd_interpolada(x, fs, duracion_fft, directa), duracion_filtro * fs, directa)
     mitad = len(filtro) // 2
     ventana = hann(len(filtro))
     y = x - x.mean()
     y[:mitad] *= ventana[:mitad]
     y[-mitad:] *= ventana[-mitad:]
-    return convolucionar(y, filtro) * np.sqrt(2 / fs)
+    return convolucionar(y, filtro, directa) * np.sqrt(2 / fs)
 
 
 def ganancia_pasa_banda(frecuencias, banda, corte):

@@ -1,6 +1,6 @@
 import numpy as np
 
-from senal import blanquear
+from senal import blanquear, fft
 
 
 def interseccion(a, b):
@@ -48,8 +48,8 @@ def segmentos_de_analisis(inicio, fin, duracion_segmento, borde_inicial, borde_f
     return resultado
 
 
-def compuerta(x, fs, umbral, ancho, transicion):
-    blanqueado = blanquear(x, fs, 4)
+def compuerta(x, fs, umbral, ancho, transicion, directa=fft):
+    blanqueado = blanquear(x, fs, 4, directa=directa)
     blanqueado[: 2 * fs] = 0
     blanqueado[-2 * fs :] = 0
     fuertes = np.flatnonzero(np.abs(blanqueado) > umbral)

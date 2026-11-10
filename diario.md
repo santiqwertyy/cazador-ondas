@@ -98,3 +98,30 @@ Sin giros negativos, el banco no llegaba: con 1060 plantillas solo 87 de 100 se�
 
 **Siguiente:**
 Terminar las pruebas de la fase 4 con GW150914 (notebook 12, ~2.2 h de cálculo) y después preparar mayo de 2019, el mes de O3 del boss, con un banco nuevo. Crear la cuenta de Kaggle.
+
+## 2026-11-07
+**Hecho:**
+Revisé con Claude todo el código y los documentos; el informe, con lo que falta y lo que hay que decidir, está en `docs/revision-2026-11-07.md`. La preparación de cada segmento (compuerta, PSD y transformada) ahora puede usar la FFT de numpy, como el filtro, y el notebook 12 la usa. `gps_evento` y `catalogo` piden el catálogo GWTC-2.1 de forma explícita. Repetí el prototipo del 12 con el recorte de 8 s en los extremos de cada tramo y después ejecuté el 12 completo, con las 866 plantillas. Empecé la etapa 4.4 con el notebook `13-mayo-2019`: segmentos de calidad, eventos del catálogo y lista de archivos de mayo de 2019.
+
+**Salió:**
+Con la FFT de numpy, la preparación del 12 pasó de 460 s a 85 s; con la FFT propia, todo da igual bit a bit que antes. Sin el catálogo explícito, GWOSC devolvía para GW190503 la versión de IAS (con el GPS 0.1 s corrido) y con GW190521 fallaba. El recorte arregla P27: el ρ² medio en la parte válida es 2.053 (esperado ≈ 2.03) y L1 ya no se llena de disparos basura. El notebook 12 tardó 2 h 16 min. GW150914 da SNR de red reponderado 22.60, por encima de los 19.4 años de fondo, y el ruido más fuerte del fondo llega a 9.15. Los demás candidatos son los que predice el fondo: 6 con red ≥ 7, donde se esperaban 4.0 ± 2.0. Mini-boss de la 4.3 superado. La compuerta deja disparos en los segundos que la rodean (36 en H1 y 83 en L1, cuando lo normal serían 1.5), pero el χ² los baja a 5.3 o menos. Mayo de 2019 tiene 18.31 días analizables y los 9 eventos de GWTC-2.1 caen dentro. Su masa chirp en el detector va de 18.7 a 98.7, y el banco actual llega hasta 45, así que no alcanza. Son 452 archivos de 4096 s por detector, ~118 GB. La coincidencia con todos los *time slides* no escala a un mes, porque el fondo crece con el cuadrado del tiempo: habrá que hacerla por días.
+
+**No entendí:**
+- Por qué con el banco completo GW150914 sube tanto (de 14.6 con 1 de cada 20 plantillas a 22.6) y el ruido más fuerte del fondo casi no cambia (de 8.94 a 9.15), si con 20 veces más plantillas el ruido tiene 20 veces más intentos.
+- Qué IFAR conviene dar cuando ningún punto del fondo supera al candidato: "> 19.4 años" o (N+1)/T, como en los artículos de LIGO.
+
+**Siguiente:**
+Hacer commit y push, ejecutar en Colab la celda del χ² del 09 y crear la cuenta de Kaggle. Aprobar los criterios del boss y armar el banco para O3 (notebook 14).
+
+## 2026-11-09
+**Hecho:**
+No toqué el buscador: preparé con Claude las herramientas para trabajar mejor. Quedó `pruebas/regresion.py`, que en unos 20 s comprueba las funciones de `src/` con ruido sintético y guarda una referencia para ver si algo cambia bit a bit. También una carpeta `.claude/` (fuera de git) con comandos para empezar y cerrar cada sesión, ejecutar notebooks y revisar el código, y un equipo de agentes: un verificador, un bibliotecario, cuatro físicos (dirección, estadística, formas de onda y detector) y dos ingenieros (GPU y pipeline). Claude buscó además quién encontró señales fuera de los catálogos oficiales y cómo.
+
+**Salió:**
+La regresión pasa con 0 fallos y detecta dos errores puestos a propósito en una copia. O4b es público desde el 26 de mayo de 2026, junto con GWTC-5.0 (390 candidatos en total), así que los datos de la fase 5 ya existen. Los grupos independientes (IAS, OGC) sí añadieron candidatos a los catálogos en O1–O3, pero siempre cerca del umbral y sobre todo en masa alta. Al probar la compuerta con un *glitch* artificial fuerte, el centro quedó 0.125 s antes del pico (P33). Los agentes nuevos y los avisos automáticos todavía no están probados.
+
+**No entendí:**
+(por completar)
+
+**Siguiente:**
+Abrir la sesión en `cazador-ondas` y usar `/retomar`. Hacer commit y push, la celda del χ² del 09 en Colab y la cuenta de Kaggle. Lanzar el consejo sobre masa alta en O4b como nicho de la fase 5 y seguir con el banco para O3 (notebook 14).

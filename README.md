@@ -62,6 +62,12 @@ En Google Colab (notebook `09-validacion-pycbc`), mi serie de SNR de GW150914 co
 
 Fase 4 en curso: test χ² de Allen, compuerta para *glitches* fuertes, segmentos de calidad de GWOSC, coincidencia y *time slides* para medir el fondo (`src/busqueda.py`, notebooks `11-chi2` y `12-fondo-gw150914`). El boss será mayo de 2019 (O3a).
 
+En el notebook `11-chi2`, el test χ² da χ²_r ≈ 1 en ruido gaussiano, baja el *glitch* de GW170814 de SNR 13.9 a 4.1 y deja a los 7 eventos de O1/O2 con su SNR.
+
+El notebook `12-fondo-gw150914` es la búsqueda entera en 2.2 h de datos de H1 y L1 alrededor de GW150914 (7825 s analizados, 866 plantillas). Primero aplica la calidad de datos, la compuerta y el χ². Después busca coincidencias desplazando L1 en pasos de 0.1 s, lo que da 19.4 años de fondo. GW150914 sale con SNR de red reponderado 22.60, por encima de todo ese fondo (IFAR > 19.4 años). El ruido más fuerte del fondo llega a 9.15. Los demás candidatos del primer plano son los que predice el fondo: 6 con SNR de red 7 o más, donde se esperaban 4.0 ± 2.0.
+
+El notebook `13-mayo-2019` prepara el boss. Mayo de 2019 tiene 18.31 días con H1 y L1 aptos para la búsqueda y los 9 eventos del catálogo GWTC-2.1 caen dentro. Sus masas chirp en el detector van de 18.7 a 98.7 M☉, así que hace falta un banco que llegue más arriba que el actual. Los datos son 452 archivos por detector (~118 GB): la búsqueda irá en Kaggle, con GPU.
+
 ## Entorno
 
 Requiere conda (Anaconda o Miniconda).
@@ -82,8 +88,8 @@ El entorno usa OpenBLAS en lugar de MKL. Con MKL, el kernel se caía en Windows 
 ## Estructura
 
 - `datos/`: datos descargados de GWOSC. No están en el repositorio; los notebooks los guardan aquí la primera vez.
-- `notebooks/`: exploración y análisis. Se ejecutan en orden: el 01 descarga los datos de GW150914 que usan del 03 al 06, y el 07 crea el banco de plantillas que usa el 08. El 09 es solo para Google Colab. El 10 es independiente.
-- `src/`: código del buscador. `senal.py`: FFT, Welch, blanqueado, pasa banda y espectrograma. `filtro_adaptado.py`: *matched filtering*, parecido entre plantillas y coincidencia H1+L1. `plantillas.py`: formas de onda con ripple y TaylorF2 escrita a mano. `datos.py`: descarga y caché de los datos, el tiempo GPS y los parámetros del catálogo.
+- `notebooks/`: exploración y análisis. Se ejecutan en orden: el 01 descarga los datos de GW150914 que usan del 03 al 06, y el 07 crea el banco de plantillas que usan el 08, el 11 y el 12. El 09 es solo para Google Colab. El 10 es independiente. El 11 usa los datos de los eventos que baja el 08, y el 12 baja 2.2 h de datos alrededor de GW150914 (~500 MB). El 13 solo baja los segmentos de calidad y el catálogo de mayo de 2019.
+- `src/`: código del buscador. `senal.py`: FFT, Welch, blanqueado, pasa banda y espectrograma. `filtro_adaptado.py`: *matched filtering*, parecido entre plantillas, coincidencia H1+L1 y test χ². `plantillas.py`: formas de onda con ripple y TaylorF2 escrita a mano. `datos.py`: descarga y caché de los datos, el tiempo GPS, los parámetros del catálogo y los segmentos de calidad. `busqueda.py`: segmentos de análisis, compuerta, disparos, coincidencia con *time slides*, tiempo de fondo y FAR.
 - `diario.md`: registro de cada día de trabajo.
 - `environment.yml`: definición del entorno de conda.
 - `LICENSE`: licencia MIT.
